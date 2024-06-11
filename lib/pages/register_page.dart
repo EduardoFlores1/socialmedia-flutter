@@ -1,20 +1,63 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:socialmedia_flutter/components/my_button.dart';
 import 'package:socialmedia_flutter/components/my_textfield.dart';
+import 'package:socialmedia_flutter/helper/helper_functions.dart';
 
-class RegisterPage extends StatelessWidget {
+class RegisterPage extends StatefulWidget {
   final void Function()? onTap;
 
+  const RegisterPage({super.key, this.onTap});
+
+  @override
+  State<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
   // text controllers
   final TextEditingController userController = TextEditingController();
+
   final TextEditingController emailController = TextEditingController();
+
   final TextEditingController passwordController = TextEditingController();
+
   final TextEditingController confirmPwController = TextEditingController();
 
-  RegisterPage({super.key, this.onTap});
-
   // login method
-  void register() {}
+  void register() async {
+    // show dialog circle
+    showDialog(
+        context: context,
+        builder: (context) => const Center(
+              child: CircularProgressIndicator(),
+            ));
+
+    // match paswords
+    if (passwordController.text != confirmPwController.text) {
+      // pop loading cirle
+      Navigator.pop(context);
+
+      // show error message
+      displayMessageToUser('Contraseñas incompatibles!', context);
+    } else {
+      // try create user
+      try {
+        // create the user
+        UserCredential? userCredencial = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(
+                email: emailController.text, password: passwordController.text);
+
+        // pop loanding circle
+        Navigator.pop(context);
+      } on FirebaseAuthException catch (e) {
+        // pop loading circle
+        Navigator.pop(context);
+
+        // display error message
+        displayMessageToUser(e.code, context);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +166,7 @@ class RegisterPage extends StatelessWidget {
                     width: 10,
                   ),
                   GestureDetector(
-                    onTap: onTap,
+                    onTap: widget.onTap,
                     child: const Text(
                       'Logueate aquí',
                       style: TextStyle(fontWeight: FontWeight.bold),
