@@ -24,7 +24,7 @@ class _LoginPageState extends State<LoginPage> {
     // show loading circle
     showDialog(
         context: context,
-        builder: (context) => Center(
+        builder: (context) => const Center(
               child: CircularProgressIndicator(),
             ));
 
@@ -34,7 +34,9 @@ class _LoginPageState extends State<LoginPage> {
           email: emailController.text, password: passwordController.text);
 
       //pop loading circle
-      if (context.mounted) Navigator.pop(context);
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
     } on FirebaseAuthException catch (e) {
       // pop loading circle
       Navigator.pop(context);

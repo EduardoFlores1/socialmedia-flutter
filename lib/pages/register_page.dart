@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:socialmedia_flutter/components/my_button.dart';
@@ -15,12 +16,9 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   // text controllers
-  final TextEditingController userController = TextEditingController();
-
+  final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-
   final TextEditingController passwordController = TextEditingController();
-
   final TextEditingController confirmPwController = TextEditingController();
 
   // login method
@@ -47,8 +45,11 @@ class _RegisterPageState extends State<RegisterPage> {
             .createUserWithEmailAndPassword(
                 email: emailController.text, password: passwordController.text);
 
+        // create a user document and add to firestore
+        createUserDocument(userCredencial);
+
         // pop loanding circle
-        Navigator.pop(context);
+        if (context.mounted) Navigator.pop(context);
       } on FirebaseAuthException catch (e) {
         // pop loading circle
         Navigator.pop(context);
@@ -57,6 +58,20 @@ class _RegisterPageState extends State<RegisterPage> {
         displayMessageToUser(e.code, context);
       }
     }
+  }
+
+  // method create user document and collect them in firestoredatabase
+  Future<void> createUserDocument(UserCredential? userCredencial) async {
+    if (userCredencial != null && userCredencial.user != null) {
+      await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(userCredencial.user!.email)
+          .set({
+        'email': userCredencial.user!.email,
+        'username': usernameController.text
+      });
+    }
+    return;
   }
 
   @override
@@ -94,7 +109,7 @@ class _RegisterPageState extends State<RegisterPage> {
               MyTextfield(
                   hintText: 'Username',
                   obscureText: false,
-                  controller: userController),
+                  controller: usernameController),
 
               const SizedBox(
                 height: 10,
